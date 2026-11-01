@@ -1,0 +1,235 @@
+EXPERIMENT 7 - DATA ANALYSIS AND DATA VISUALIZATION USING R Dataset:
+Student Academic Performance
+
+============================================================ PART 1 -
+INSTALLATION AND STARTING R
+============================================================
+
+A. Ubuntu: Update package list
+
+sudo apt update
+
+B. Install R
+
+sudo apt install r-base
+
+C. Check R version in Ubuntu terminal
+
+R –version
+
+D. Start R console
+
+R
+
+E. Check version inside R console
+
+version
+
+F. Print R version
+
+print(R.version.string)
+
+NOTE: The command -version is not an R command. Use version inside the R
+console. RStudio is an IDE for writing and running R scripts. Download
+RStudio Desktop from: https://posit.co/download/rstudio-desktop/
+
+============================================================ PART 2 -
+CREATE R SCRIPT
+============================================================
+
+1.  Open RStudio.
+2.  Select File -> New File -> R Script.
+3.  Save the script as EXP7.R.
+4.  Enter the R code below.
+5.  Run the code using the Run button or Ctrl+Enter.
+
+============================================================ PART 3 -
+CREATE STUDENT DATASET
+============================================================
+
+student_data <- data.frame( Student_ID = 1:15,
+
+Gender = c( “Male”, “Female”, “Male”, “Female”, “Male”, “Female”,
+“Male”, “Female”, “Male”, “Female”, “Male”, “Female”, “Male”, “Female”,
+“Male” ),
+
+Study_Hours = c( 2, 4, 3, 5, 1, 3, 4, 2, 5, 4, 3, 5, 2, 3, 4 ),
+
+Attendance = c( 72, 85, 80, 92, 65, 78, 88, 70, 95, 86, 76, 94, 68, 82,
+89 ),
+
+Assignment_Score = c( 65, 78, 72, 88, 55, 75, 82, 68, 91, 85, 70, 90,
+60, 77, 84 ),
+
+Internal_Marks = c( 60, 82, 70, 90, 52, 73, 80, 64, 92, 84, 68, 91, 58,
+75, 81 ),
+
+Final_Marks = c( 62, 84, 73, 91, 50, 76, 83, 65, 94, 86, 71, 93, 59, 78,
+85 ) )
+
+Display the dataset:
+
+print(student_data)
+
+============================================================ PART 4 -
+DATA ANALYSIS
+============================================================
+
+QUERY 1 - DISPLAY STRUCTURE OF DATASET
+
+str(student_data)
+
+Purpose: Displays the number of observations, variables, column names
+and data types.
+
+QUERY 2 - SUMMARY OF DATASET
+
+summary(student_data)
+
+Summary of Final Marks only:
+
+summary(student_data$Final_Marks)
+
+Purpose: Displays minimum, first quartile, median, mean, third quartile
+and maximum.
+
+QUERY 3 - MEAN, MEDIAN AND STANDARD DEVIATION
+
+A. Mean of Final Marks
+
+mean(student_data$Final_Marks)
+
+Expected result: 76.66667
+
+B. Median of Final Marks
+
+median(student_data$Final_Marks)
+
+Expected result: 78
+
+C. Standard Deviation of Final Marks
+
+sd(student_data$Final_Marks)
+
+Expected result: 13.21615
+
+QUERY 4 - MINIMUM AND MAXIMUM FINAL MARKS
+
+A. Maximum marks
+
+max(student_data$Final_Marks)
+
+Expected result: 94
+
+B. Minimum marks
+
+min(student_data$Final_Marks)
+
+Expected result: 50
+
+QUERY 5 - GENDER COUNT
+
+table(student_data$Gender)
+
+Expected result: Female 7 Male 8
+
+============================================================ PART 5 -
+DATA VISUALIZATION
+============================================================
+
+QUERY 1 - BAR CHART: GENDER DISTRIBUTION
+
+gender_count <- table(student_data$Gender)
+
+barplot( gender_count, main = “Gender Distribution”, xlab = “Gender”,
+ylab = “Number of Students”, col = “lightblue” )
+
+Purpose: Displays the number of male and female students using bars.
+
+QUERY 2 - HISTOGRAM: DISTRIBUTION OF FINAL MARKS
+
+hist( student_data$Final_Marks, main = “Distribution of Final Marks”,
+xlab = “Final Marks”, ylab = “Number of Students”, col = “lightblue”,
+breaks = 5 )
+
+Purpose: Displays the frequency distribution of students’ final marks.
+
+QUERY 3 - SCATTER PLOT: STUDY HOURS VS FINAL MARKS
+
+plot( student_dataStudy_(H)ours, student_(d)ataFinal_Marks, main =
+“Study Hours vs Final Marks”, xlab = “Study Hours”, ylab = “Final
+Marks”, pch = 19 )
+
+Purpose: Shows the relationship between study hours and final marks.
+
+QUERY 4 - PIE CHART: GENDER DISTRIBUTION
+
+gender_count <- table(student_data$Gender)
+
+pie( gender_count, main = “Gender Distribution”, col = c(“lightblue”,
+“pink”) )
+
+Purpose: Displays male and female student distribution as slices of a
+circle.
+
+============================================================ PART 6 -
+ALL IMPORTANT R COMMANDS
+============================================================
+
+data.frame() - Creates a data frame. c() - Combines values into a
+vector. print() - Displays data. str() - Displays dataset structure.
+summary() - Displays statistical summary. mean() - Calculates mean.
+median() - Calculates median. sd() - Calculates standard deviation.
+max() - Finds maximum value. min() - Finds minimum value. table() -
+Counts frequencies. barplot() - Creates a bar chart. hist() - Creates a
+histogram. plot() - Creates a scatter plot. pie() - Creates a pie chart.
+version - Displays R version information.
+
+============================================================ PART 7 -
+EXECUTION STEPS
+============================================================
+
+1.  Install R using the Ubuntu terminal:
+
+    sudo apt update sudo apt install r-base
+
+2.  Check R installation:
+
+    R –version
+
+3.  Open RStudio.
+
+4.  Create a new R Script: File -> New File -> R Script
+
+5.  Save the file as: EXP7.R
+
+6.  Copy the student dataset code into the script.
+
+7.  Run the dataset code.
+
+8.  Run the data analysis commands: str() summary() mean() median() sd()
+    max() min() table()
+
+9.  Run the visualization commands: barplot() hist() plot() pie()
+
+10. View text output in the Console.
+
+11. View graphs in the Plots panel.
+
+12. Save the script using Ctrl+S.
+
+============================================================ IMPORTANT
+EXPECTED RESULTS
+============================================================
+
+Total students : 15 Female students : 7 Male students : 8 Mean Final
+Marks : 76.66667 Median Final Marks : 78 Standard Deviation : 13.21615
+Maximum Final Marks : 94 Minimum Final Marks : 50
+
+============================================================ END OF
+EXPERIMENT 7
+============================================================
+
+PRACTICAL NOTE: Run R commands in the RStudio Console or execute them
+from the R Script. The dataset contains 15 students and 7 variables, as
+shown in the Experiment 7 lab manual.

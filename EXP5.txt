@@ -1,0 +1,304 @@
+EXPERIMENT 5 - APACHE PIG AND PIG LATIN COMMANDS Topic: Agriculture
+Dataset Analysis and Titanic Passenger Dataset Analysis
+
+IMPORTANT: - Run Linux commands in the Ubuntu terminal. - Run Pig Latin
+statements at the grunt> prompt. - Replace file paths with the actual
+location of your datasets. - The agriculture schema and queries follow
+the Experiment 5 lab manual. - The Titanic query statements below are
+examples based on the standard Titanic train.csv schema. The PDF shows
+the five query tasks, but does not provide their complete Pig Latin
+statements.
+
+============================================================ PART A -
+INSTALLATION AND STARTING APACHE PIG
+============================================================
+
+1.  Check Java
+
+java -version
+
+2.  Check Hadoop
+
+hadoop version
+
+3.  Extract Pig archive (example for Pig 0.17.0)
+
+tar -xzf pig-0.17.0.tar.gz
+
+4.  Rename extracted folder
+
+mv pig-0.17.0 pig
+
+5.  Open bash configuration
+
+nano ~/.bashrc
+
+6.  Add these environment variables (change path if needed)
+
+export PIG_HOME=/home/hadoop/pig export PATH=PATH:PIG_HOME/bin
+
+7.  Apply configuration
+
+source ~/.bashrc
+
+8.  Check Pig version
+
+pig -version
+
+9.  Start Pig in Local Mode
+
+pig -x local
+
+Pig prompt:
+
+grunt>
+
+10. Exit Pig
+
+quit;
+
+============================================================ PART B -
+AGRICULTURE DATASET (crop_production.csv)
+============================================================
+
+Dataset fields used in the lab manual: state_name, district_name,
+crop_year, season, crop, area, production
+
+Assumed dataset path: /home/hadoop/Desktop/crop_production.csv
+
+Run the following Pig Latin commands at the grunt> prompt.
+
+QUERY 1 - LOAD THE AGRICULTURE DATASET
+
+agriculture = LOAD '/home/hadoop/Desktop/crop_production.csv' USING
+PigStorage(',') AS ( state_name:chararray, district_name:chararray,
+crop_year:int, season:chararray, crop:chararray, area:double,
+production:double );
+
+QUERY 2A - DUMP THE DATASET
+
+DUMP agriculture;
+
+QUERY 2B - DESCRIBE THE DATASET
+
+DESCRIBE agriculture;
+
+QUERY 3 - GROUP ALL RECORDS STATE-WISE
+
+state_group = GROUP agriculture BY state_name;
+
+DUMP state_group;
+
+QUERY 4A - FIND THE HIGHEST-PRODUCED CROP RECORD FROM EACH STATE
+
+top_crop = FOREACH state_group { ordered = ORDER agriculture BY
+production DESC; top = LIMIT ordered 1; GENERATE FLATTEN(top); };
+
+DUMP top_crop;
+
+QUERY 4B - DISPLAY THE DETAILS OF THE TOP CROP
+
+top_crop_details = FOREACH top_crop GENERATE state_name, district_name,
+crop_year, season, crop, area, production;
+
+DUMP top_crop_details;
+
+QUERY 5 - STORE QUERY 4 OUTPUT ON THE LOCAL FILE SYSTEM
+
+STORE top_crop_details INTO '/home/hadoop/Desktop/data_top' USING
+PigStorage(',');
+
+NOTE: Pig STORE creates a directory named data_top containing one or
+more part files. To create the single data_top.txt file requested in the
+lab manual, run this Linux command in a separate terminal after Pig
+finishes:
+
+cat /home/hadoop/Desktop/data_top/part-* >
+/home/hadoop/Desktop/data_top.txt
+
+Check the file:
+
+cat /home/hadoop/Desktop/data_top.txt
+
+QUERY 6 - TRANSFER data_top.txt FROM LOCAL FILE SYSTEM TO HDFS
+
+Run these commands in a separate Ubuntu terminal, not at the grunt>
+prompt.
+
+hdfs dfs -mkdir -p /user/hadoop/agriculture
+
+hdfs dfs -put /home/hadoop/Desktop/data_top.txt
+/user/hadoop/agriculture/
+
+List HDFS directory:
+
+hdfs dfs -ls /user/hadoop/agriculture
+
+Display uploaded file:
+
+hdfs dfs -cat /user/hadoop/agriculture/data_top.txt
+
+============================================================ PART C -
+TITANIC PASSENGER DATASET ANALYSIS
+============================================================
+
+The lab manual asks for these five tasks: 1. Display first 10 passenger
+records. 2. Count passengers by gender. 3. Count survivors and
+non-survivors. 4. Find number of passengers in each class. 5. Calculate
+average fare for each passenger class.
+
+The following examples assume the standard Titanic train.csv columns:
+PassengerId, Survived, Pclass, Name, Sex, Age, SibSp, Parch, Ticket,
+Fare, Cabin, Embarked
+
+Assumed dataset path: /home/hadoop/Desktop/train.csv
+
+Start Pig Local Mode if not already running:
+
+pig -x local
+
+QUERY 1 - LOAD TITANIC DATASET
+
+passengers = LOAD '/home/hadoop/Desktop/train.csv' USING PigStorage(',')
+AS ( PassengerId:int, Survived:int, Pclass:int, Name:chararray,
+Sex:chararray, Age:double, SibSp:int, Parch:int, Ticket:chararray,
+Fare:double, Cabin:chararray, Embarked:chararray );
+
+If train.csv has a header row, remove the header before loading or
+filter out the header/invalid rows. For example:
+
+passengers_clean = FILTER passengers BY PassengerId IS NOT NULL;
+
+Use passengers_clean in the queries below.
+
+QUERY 2 - DISPLAY FIRST 10 PASSENGER RECORDS
+
+first10 = LIMIT passengers_clean 10;
+
+DUMP first10;
+
+QUERY 3 - COUNT PASSENGERS BY GENDER
+
+gender_group = GROUP passengers_clean BY Sex;
+
+gender_count = FOREACH gender_group GENERATE group AS gender,
+COUNT(passengers_clean) AS total_passengers;
+
+DUMP gender_count;
+
+QUERY 4 - COUNT SURVIVORS AND NON-SURVIVORS
+
+survival_group = GROUP passengers_clean BY Survived;
+
+survival_count = FOREACH survival_group GENERATE group AS
+survival_status, COUNT(passengers_clean) AS total_passengers;
+
+DUMP survival_count;
+
+Survived = 1 means survived. Survived = 0 means did not survive.
+
+QUERY 5 - NUMBER OF PASSENGERS IN EACH CLASS
+
+class_group = GROUP passengers_clean BY Pclass;
+
+class_count = FOREACH class_group GENERATE group AS passenger_class,
+COUNT(passengers_clean) AS total_passengers;
+
+DUMP class_count;
+
+Pclass 1 = First class Pclass 2 = Second class Pclass 3 = Third class
+
+QUERY 6 - AVERAGE FARE FOR EACH PASSENGER CLASS
+
+fare_group = GROUP passengers_clean BY Pclass;
+
+average_fare = FOREACH fare_group GENERATE group AS passenger_class,
+AVG(passengers_clean.Fare) AS avg_fare;
+
+DUMP average_fare;
+
+============================================================ PART D -
+IMPORTANT PIG LATIN COMMANDS
+============================================================
+
+LOAD - Loads data into a relation. DUMP - Displays relation output.
+DESCRIBE - Displays relation schema. FILTER - Selects records matching a
+condition. GROUP - Groups records by a field. FOREACH - Processes each
+record or group. ORDER - Sorts records. LIMIT - Limits number of
+records. GENERATE - Specifies output fields or expressions. FLATTEN -
+Converts nested data into a flat structure. STORE - Saves output to
+local storage or HDFS. COUNT() - Counts records. AVG() - Calculates
+average. PigStorage(‘,’) - Reads comma-separated data.
+
+ORDER direction: ASC - Ascending DESC - Descending
+
+============================================================ PART E -
+USEFUL LINUX AND HDFS COMMANDS
+============================================================
+
+Show current directory:
+
+pwd
+
+List files:
+
+ls
+
+List Desktop files:
+
+ls ~/Desktop
+
+Display agriculture CSV:
+
+head ~/Desktop/crop_production.csv
+
+Display Titanic CSV:
+
+head ~/Desktop/train.csv
+
+Create HDFS directory:
+
+hdfs dfs -mkdir -p /user/hadoop/agriculture
+
+List HDFS files:
+
+hdfs dfs -ls /user/hadoop/agriculture
+
+Upload local file to HDFS:
+
+hdfs dfs -put ~/Desktop/data_top.txt /user/hadoop/agriculture/
+
+Display HDFS file:
+
+hdfs dfs -cat /user/hadoop/agriculture/data_top.txt
+
+Download HDFS file to local system:
+
+hdfs dfs -get /user/hadoop/agriculture/data_top.txt ~/Desktop/
+
+Remove HDFS file (use carefully):
+
+hdfs dfs -rm /user/hadoop/agriculture/data_top.txt
+
+============================================================ PRACTICAL
+NOTES ============================================================
+
+1.  Commands such as pig -x local, tar, nano, cat, and hdfs dfs are
+    Linux terminal commands.
+2.  Statements such as LOAD, DUMP, DESCRIBE, GROUP, FOREACH, and STORE
+    are Pig Latin commands and must be entered at the grunt> prompt.
+3.  If a relation name already exists in the current Pig session, use a
+    different relation name or restart Pig.
+4.  If the output directory already exists, STORE may fail. Remove or
+    rename the old output directory before storing again.
+5.  The agriculture CSV schema in the lab manual assumes seven columns
+    and no header row. If the actual CSV has a header or a different
+    column order, adjust the load accordingly.
+6.  The Titanic queries are based on the standard 12-column Titanic
+    train.csv. Check the actual dataset header and column order before
+    running.
+7.  The Experiment 5 PDF shows the five Titanic query tasks but does not
+    print their complete Pig Latin code. The Titanic code in this file
+    is a working example based on the standard dataset schema.
+
+END OF EXPERIMENT 5 COMMANDS

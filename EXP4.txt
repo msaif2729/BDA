@@ -1,0 +1,235 @@
+EXPERIMENT 4 - MONGODB INSTALLATION AND NOSQL QUERIES Problem Statement:
+Online Book Store Management System
+
+============================================================ 1. OPEN
+MONGODB SHELL AND SELECT DATABASE
+============================================================
+
+mongosh
+
+db.version()
+
+use online_book_store
+
+============================================================ 2. CREATE
+COLLECTION ============================================================
+
+db.createCollection(“books”)
+
+show collections
+
+============================================================ 3. INSERT
+OPERATIONS ============================================================
+
+A. Insert One Document
+
+db.books.insertOne({ book_id: 101, title: “The Alchemist”, author:
+“Paulo Coelho”, category: “Fiction”, price: 350, stock: 20 })
+
+B. Insert Multiple Documents
+
+db.books.insertMany([ { book_id: 102, title: “Atomic Habits”, author:
+“James Clear”, category: “Self Help”, price: 499, stock: 15 }, {
+book_id: 103, title: “Clean Code”, author: “Robert C. Martin”, category:
+“Programming”, price: 650, stock: 10 }, { book_id: 104, title: “Rich Dad
+Poor Dad”, author: “Robert Kiyosaki”, category: “Finance”, price: 399,
+stock: 25 }, { book_id: 105, title: “Introduction to Algorithms”,
+author: “Thomas H. Cormen”, category: “Programming”, price: 850, stock:
+8 }])
+
+============================================================ 4. READ /
+FIND OPERATIONS
+============================================================
+
+A. Display All Documents
+
+db.books.find()
+
+B. Display Documents in Readable Format
+
+db.books.find().pretty()
+
+C. Find One Specific Book
+
+db.books.findOne({ book_id: 103 })
+
+D. Find Books from Programming Category
+
+db.books.find({ category: “Programming” })
+
+E. Find Books with Price Greater Than 500
+
+db.books.find({ price: { $gt: 500 } })
+
+============================================================ 5. UPDATE
+OPERATIONS ============================================================
+
+A. Update Price of Book ID 101 to 375
+
+db.books.updateOne( { book_id: 101 }, { $set: { price: 375 } } )
+
+B. Verify the Updated Book
+
+db.books.findOne({ book_id: 101 })
+
+C. Increase Price of All Programming Books by 10 Percent
+
+db.books.updateMany( { category: “Programming” }, { $mul: { price: 1.10
+} } )
+
+D. Verify Updated Programming Books
+
+db.books.find({ category: “Programming” })
+
+============================================================ 6. DELETE
+OPERATIONS ============================================================
+
+A. Delete One Book (Book ID 105)
+
+db.books.deleteOne({ book_id: 105 })
+
+B. Verify Deletion
+
+db.books.find()
+
+C. Delete Multiple Documents (Optional Practice)
+
+db.books.deleteMany({ category: “Finance” })
+
+NOTE: Run deleteMany only when you intend to delete every matching
+document.
+
+============================================================ 7. FIND AND
+SEARCH OPERATIONS
+============================================================
+
+A. Display All Documents
+
+db.books.find()
+
+B. Search Titles Containing the Word “Code”
+
+db.books.find({ title: { $regex: “Code”, $options: “i” } })
+
+C. Search Titles Starting with “The”
+
+db.books.find({ title: { $regex: “^The”, $options: “i” } })
+
+D. Find Programming Books Costing More Than 500 (Both conditions must
+match - AND)
+
+db.books.find({ category: “Programming”, price: { $gt: 500 } })
+
+E. Find Books in Programming OR Finance Category
+
+db.books.find({ $or: [ { category: “Programming” }, { category:
+“Finance” } ] })
+
+F. Other Comparison Operator Examples
+
+Greater than: db.books.find({ price: { $gt: 500 } })
+
+Less than: db.books.find({ price: { $lt: 500 } })
+
+Greater than or equal: db.books.find({ price: { $gte: 500 } })
+
+Less than or equal: db.books.find({ price: { $lte: 500 } })
+
+Not equal: db.books.find({ category: { $ne: “Fiction” } })
+
+Equal: db.books.find({ category: { $eq: “Programming” } })
+
+============================================================ 8. INDEXING
+OPERATIONS ============================================================
+
+A. Display Existing Indexes
+
+db.books.getIndexes()
+
+B. Create Ascending Index on Title
+
+db.books.createIndex({ title: 1 })
+
+C. Create Descending Index on Price (Additional Practice)
+
+db.books.createIndex({ price: -1 })
+
+D. Create Compound Index on Category and Price
+
+db.books.createIndex({ category: 1, price: 1 })
+
+E. Verify Indexes
+
+db.books.getIndexes()
+
+============================================================ 9.
+AGGREGATION OPERATIONS
+============================================================
+
+A. Aggregation Using $match Find Programming Books
+
+db.books.aggregate([ { $match: { category: “Programming” } }])
+
+B. Aggregation Using $match and $sort Find Programming Books and Sort by
+Price Ascending
+
+db.books.aggregate([ { $match: { category: “Programming” } }, { $sort: {
+price: 1 } }])
+
+C. Sort by Price Descending (Additional Practice)
+
+db.books.aggregate([ { $sort: { price: -1 } }])
+
+============================================================ 10. USEFUL
+COMMANDS ============================================================
+
+Show current database:
+
+db
+
+Show all databases:
+
+show dbs
+
+Show collections in current database:
+
+show collections
+
+Count all books:
+
+db.books.countDocuments()
+
+Count Programming books:
+
+db.books.countDocuments({ category: “Programming” })
+
+Drop the books collection (CAUTION: deletes the collection):
+
+db.books.drop()
+
+Drop the current database (CAUTION: deletes the database and its data):
+
+db.dropDatabase()
+
+============================================================ 11.
+IMPORTANT OPERATORS - QUICK REVISION
+============================================================
+
+gt = Greaterthanlt = Less than gte = Greaterthanorequaltolte = Less than
+or equal to ne = Notequaleq = Equal set = Setorupdateafieldmul =
+Multiply a numeric field regex = Searchusingatextpatternor = Match at
+least one condition match = Filterdocumentsinaggregationsort = Sort
+documents in aggregation
+
+Index sort values: 1 = Ascending -1 = Descending
+
+============================================================ END OF
+EXPERIMENT 4 QUERY FILE
+============================================================
+
+PRACTICAL NOTE: Run the commands in order in mongosh. The insert
+commands add the sample documents. If you run insertMany more than once,
+duplicate book_id values may be inserted because book_id is not declared
+unique in this experiment. The update and delete commands change the
+data. The drop commands are destructive; use them only when you
+intentionally want to remove data.
