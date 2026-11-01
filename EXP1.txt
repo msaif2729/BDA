@@ -1,0 +1,617 @@
+EXPERIMENT 1 - HADOOP HDFS PRACTICAL
+Topic: HDFS Basics, Hadoop Ecosystem Overview, file operations in HDFS and basic Hadoop setup.
+
+IMPORTANT:
+- This file contains standard HDFS practical commands based on the Experiment 1 title in the Big Data Analytics Lab syllabus and the HDFS command reference previously shared.
+- The exact Experiment 1 lab PDF was not available in the current files, so verify the exact task names and paths against your college journal.
+- Run Linux commands in Ubuntu terminal. Run HDFS commands after Hadoop is configured and running.
+- On Windows, use the Windows command equivalents shown in Part 3 where applicable.
+
+============================================================
+PART 1 - HADOOP AND HDFS BASICS
+============================================================
+
+What is Hadoop?
+Apache Hadoop is a framework for distributed storage and processing of large datasets across a cluster of computers.
+
+What is HDFS?
+HDFS stands for Hadoop Distributed File System. It stores large files across multiple machines.
+
+Important HDFS components:
+
+1. NameNode:
+   Maintains filesystem metadata such as file names, directories and block locations.
+
+2. DataNode:
+   Stores the actual data blocks.
+
+3. Secondary NameNode:
+   Periodically creates checkpoints of NameNode metadata. It is not a standby NameNode.
+
+4. YARN:
+   Manages cluster resources and schedules applications.
+
+5. ResourceManager:
+   Manages resources across the cluster.
+
+6. NodeManager:
+   Manages resources and containers on an individual worker node.
+
+============================================================
+PART 2 - CHECK JAVA AND HADOOP
+============================================================
+
+Check Java version:
+
+java -version
+
+Check Hadoop version:
+
+hadoop version
+
+Check Hadoop environment variables in Linux:
+
+echo $JAVA_HOME
+echo $HADOOP_HOME
+
+Check HDFS command help:
+
+hdfs dfs -help
+
+Display HDFS command usage:
+
+hdfs dfs
+
+============================================================
+PART 3 - START HADOOP SERVICES
+============================================================
+
+UBUNTU / LINUX:
+
+Start HDFS services:
+
+start-dfs.sh
+
+Start YARN services:
+
+start-yarn.sh
+
+Check running Java processes:
+
+jps
+
+Expected processes in a single-node setup may include:
+
+NameNode
+DataNode
+SecondaryNameNode
+ResourceManager
+NodeManager
+Jps
+
+Stop YARN:
+
+stop-yarn.sh
+
+Stop HDFS:
+
+stop-dfs.sh
+
+WINDOWS (if Hadoop is configured on Windows):
+
+Open Command Prompt as required by your Hadoop setup.
+
+Start HDFS:
+
+%HADOOP_HOME%\sbin\start-dfs.cmd
+
+Start YARN:
+
+%HADOOP_HOME%\sbin\start-yarn.cmd
+
+Check Java processes:
+
+jps
+
+NOTE:
+Windows Hadoop setup can require additional configuration such as winutils.exe and correct environment variables. Use the commands configured in your lab system.
+
+============================================================
+PART 4 - BASIC HDFS DIRECTORY COMMANDS
+============================================================
+
+1. List the root directory of HDFS:
+
+hdfs dfs -ls /
+
+2. List files in the current user's HDFS home directory:
+
+hdfs dfs -ls /user/hadoop
+
+3. Create a directory in HDFS:
+
+hdfs dfs -mkdir /user/hadoop/bda
+
+4. Create nested directories:
+
+hdfs dfs -mkdir -p /user/hadoop/bda/input
+
+5. List directory contents:
+
+hdfs dfs -ls /user/hadoop/bda
+
+6. List files recursively:
+
+hdfs dfs -ls -R /user/hadoop/bda
+
+7. Display the size of a directory:
+
+hdfs dfs -du -h /user/hadoop/bda
+
+8. Display HDFS filesystem capacity and usage:
+
+hdfs dfs -df -h /
+
+============================================================
+PART 5 - COPY FILE FROM LOCAL FILE SYSTEM TO HDFS
+============================================================
+
+First create a local text file in Linux:
+
+echo "Hello Hadoop HDFS" > input.txt
+
+Display local file:
+
+cat input.txt
+
+Upload local file to HDFS using -put:
+
+hdfs dfs -put input.txt /user/hadoop/bda/
+
+Alternative command using -copyFromLocal:
+
+hdfs dfs -copyFromLocal input.txt /user/hadoop/bda/
+
+Verify upload:
+
+hdfs dfs -ls /user/hadoop/bda
+
+Display uploaded file:
+
+hdfs dfs -cat /user/hadoop/bda/input.txt
+
+NOTE:
+-put and -copyFromLocal copy a local file into HDFS. The destination file must not already exist unless an appropriate overwrite option is used.
+
+============================================================
+PART 6 - COPY FILE FROM HDFS TO LOCAL FILE SYSTEM
+============================================================
+
+Download file using -get:
+
+hdfs dfs -get /user/hadoop/bda/input.txt downloaded.txt
+
+Alternative command using -copyToLocal:
+
+hdfs dfs -copyToLocal /user/hadoop/bda/input.txt downloaded_copy.txt
+
+Verify local files:
+
+ls
+
+Display downloaded file:
+
+cat downloaded.txt
+
+NOTE:
+-get and -copyToLocal copy a file from HDFS to the local filesystem.
+
+============================================================
+PART 7 - DISPLAY FILE CONTENTS IN HDFS
+============================================================
+
+Display complete file:
+
+hdfs dfs -cat /user/hadoop/bda/input.txt
+
+Display last part of file:
+
+hdfs dfs -tail /user/hadoop/bda/input.txt
+
+Display file in text format (useful for compressed text files):
+
+hdfs dfs -text /user/hadoop/bda/input.txt
+
+============================================================
+PART 8 - APPEND DATA TO AN HDFS FILE
+============================================================
+
+Create another local file:
+
+echo "Big Data Analytics Practical" > append.txt
+
+Append local file contents to an existing HDFS file:
+
+hdfs dfs -appendToFile append.txt /user/hadoop/bda/input.txt
+
+Verify appended content:
+
+hdfs dfs -cat /user/hadoop/bda/input.txt
+
+NOTE:
+HDFS is designed mainly for write-once, read-many workloads. Appending support depends on the filesystem and configuration.
+
+============================================================
+PART 9 - MOVE AND RENAME FILES IN HDFS
+============================================================
+
+Rename an HDFS file:
+
+hdfs dfs -mv /user/hadoop/bda/input.txt /user/hadoop/bda/renamed.txt
+
+Verify:
+
+hdfs dfs -ls /user/hadoop/bda
+
+Move a file to another HDFS directory:
+
+hdfs dfs -mv /user/hadoop/bda/renamed.txt /user/hadoop/bda/input/
+
+Verify:
+
+hdfs dfs -ls /user/hadoop/bda/input
+
+NOTE:
+The HDFS -mv command moves or renames paths within HDFS. It is not the same as moving a local file.
+
+============================================================
+PART 10 - COPY FILES WITHIN HDFS
+============================================================
+
+Copy a file within HDFS:
+
+hdfs dfs -cp /user/hadoop/bda/input/renamed.txt /user/hadoop/bda/copy.txt
+
+Verify:
+
+hdfs dfs -ls /user/hadoop/bda
+
+============================================================
+PART 11 - DELETE FILES AND DIRECTORIES FROM HDFS
+============================================================
+
+Delete one file:
+
+hdfs dfs -rm /user/hadoop/bda/copy.txt
+
+Delete an empty directory:
+
+hdfs dfs -rmdir /user/hadoop/bda/emptydir
+
+Delete a directory and its contents recursively:
+
+hdfs dfs -rm -r /user/hadoop/bda/input
+
+Delete a directory without prompting:
+
+hdfs dfs -rm -r -f /user/hadoop/bda
+
+IMPORTANT:
+The -rm and -rm -r commands permanently remove HDFS data. Check the path carefully before executing them.
+
+============================================================
+PART 12 - FILE AND DIRECTORY INFORMATION
+============================================================
+
+Check whether a path exists:
+
+hdfs dfs -test -e /user/hadoop/bda
+
+Check whether a path is a file:
+
+hdfs dfs -test -f /user/hadoop/bda/input.txt
+
+Display file and directory counts, content size and space consumed:
+
+hdfs dfs -count /user/hadoop
+
+Display file checksum:
+
+hdfs dfs -checksum /user/hadoop/bda/input.txt
+
+Display file status:
+
+hdfs dfs -stat "%n %b bytes %o block-size" /user/hadoop/bda/input.txt
+
+============================================================
+PART 13 - HDFS PERMISSIONS
+============================================================
+
+Display file permissions:
+
+hdfs dfs -ls /user/hadoop/bda
+
+Change permissions:
+
+hdfs dfs -chmod 755 /user/hadoop/bda
+
+Change owner and group (requires suitable HDFS permissions):
+
+hdfs dfs -chown hadoop:hadoop /user/hadoop/bda
+
+Change group:
+
+hdfs dfs -chgrp hadoop /user/hadoop/bda
+
+NOTE:
+Only an authorized HDFS user or administrator can change ownership.
+
+============================================================
+PART 14 - HDFS REPLICATION
+============================================================
+
+Set replication factor to 2:
+
+hdfs dfs -setrep 2 /user/hadoop/bda/input.txt
+
+Verify file status:
+
+hdfs dfs -stat "%n replication=%r" /user/hadoop/bda/input.txt
+
+NOTE:
+The replication factor is limited by the number of available DataNodes. In a single-DataNode setup, a replication factor of 2 cannot be fully satisfied.
+
+============================================================
+PART 15 - HDFS SAFE MODE
+============================================================
+
+Check safe mode status:
+
+hdfs dfsadmin -safemode get
+
+Enter safe mode (administrative operation):
+
+hdfs dfsadmin -safemode enter
+
+Leave safe mode (administrative operation):
+
+hdfs dfsadmin -safemode leave
+
+NOTE:
+Safe mode is a NameNode state in which filesystem modifications are restricted. Use these commands only when required by the practical or administrator.
+
+============================================================
+PART 16 - USEFUL LOCAL LINUX COMMANDS
+============================================================
+
+Show current directory:
+
+pwd
+
+List local files:
+
+ls
+
+List files with details:
+
+ls -l
+
+Create a local directory:
+
+mkdir localdata
+
+Create a local text file:
+
+touch local.txt
+
+Write text to a local file:
+
+echo "Hadoop practical" > local.txt
+
+Display local file:
+
+cat local.txt
+
+Copy a local file:
+
+cp local.txt local_copy.txt
+
+Rename a local file:
+
+mv local_copy.txt renamed.txt
+
+Delete a local file:
+
+rm renamed.txt
+
+============================================================
+PART 17 - COMPLETE PRACTICE SEQUENCE
+============================================================
+
+Run these commands in order after Hadoop is configured and running.
+
+1. Start Hadoop services (Linux):
+
+   start-dfs.sh
+   start-yarn.sh
+   jps
+
+2. Create a local file:
+
+   echo "Hello Hadoop HDFS" > input.txt
+
+3. Create HDFS directory:
+
+   hdfs dfs -mkdir -p /user/hadoop/bda
+
+4. Upload local file to HDFS:
+
+   hdfs dfs -put input.txt /user/hadoop/bda/
+
+5. List HDFS directory:
+
+   hdfs dfs -ls /user/hadoop/bda
+
+6. Display HDFS file:
+
+   hdfs dfs -cat /user/hadoop/bda/input.txt
+
+7. Download file from HDFS:
+
+   hdfs dfs -get /user/hadoop/bda/input.txt downloaded.txt
+
+8. Verify local downloaded file:
+
+   cat downloaded.txt
+
+9. Rename file in HDFS:
+
+   hdfs dfs -mv /user/hadoop/bda/input.txt /user/hadoop/bda/renamed.txt
+
+10. Copy file within HDFS:
+
+    hdfs dfs -cp /user/hadoop/bda/renamed.txt /user/hadoop/bda/copy.txt
+
+11. Display HDFS directory:
+
+    hdfs dfs -ls /user/hadoop/bda
+
+12. Delete copied file:
+
+    hdfs dfs -rm /user/hadoop/bda/copy.txt
+
+13. Delete renamed file:
+
+    hdfs dfs -rm /user/hadoop/bda/renamed.txt
+
+14. Delete HDFS directory if it is empty:
+
+    hdfs dfs -rmdir /user/hadoop/bda
+
+============================================================
+PART 18 - IMPORTANT HDFS COMMANDS QUICK REVISION
+============================================================
+
+hdfs dfs -ls PATH
+    List files and directories.
+
+hdfs dfs -mkdir PATH
+    Create a directory.
+
+hdfs dfs -mkdir -p PATH
+    Create parent directories if needed.
+
+hdfs dfs -put LOCAL_PATH HDFS_PATH
+    Copy local file to HDFS.
+
+hdfs dfs -copyFromLocal LOCAL_PATH HDFS_PATH
+    Copy local file to HDFS.
+
+hdfs dfs -get HDFS_PATH LOCAL_PATH
+    Copy file from HDFS to local system.
+
+hdfs dfs -copyToLocal HDFS_PATH LOCAL_PATH
+    Copy file from HDFS to local system.
+
+hdfs dfs -cat PATH
+    Display file contents.
+
+hdfs dfs -tail PATH
+    Display the end of a file.
+
+hdfs dfs -appendToFile LOCAL_FILE HDFS_FILE
+    Append local file contents to an HDFS file.
+
+hdfs dfs -cp SOURCE DESTINATION
+    Copy within HDFS.
+
+hdfs dfs -mv SOURCE DESTINATION
+    Move or rename within HDFS.
+
+hdfs dfs -rm PATH
+    Delete a file.
+
+hdfs dfs -rm -r PATH
+    Delete a directory recursively.
+
+hdfs dfs -rmdir PATH
+    Delete an empty directory.
+
+hdfs dfs -du -h PATH
+    Display directory/file size.
+
+hdfs dfs -df -h PATH
+    Display filesystem capacity and usage.
+
+hdfs dfs -count PATH
+    Count directories, files and content size.
+
+hdfs dfs -chmod MODE PATH
+    Change permissions.
+
+hdfs dfs -chown USER:GROUP PATH
+    Change owner and group.
+
+hdfs dfs -setrep NUMBER PATH
+    Set replication factor.
+
+hdfs dfs -test -e PATH
+    Test whether path exists.
+
+hdfs dfsadmin -safemode get
+    Check NameNode safe mode status.
+
+============================================================
+PART 19 - COMMON ERRORS AND SOLUTIONS
+============================================================
+
+1. Connection refused:
+   Start Hadoop NameNode and DataNode. Check with jps.
+
+2. Safe mode:
+   Check status using:
+   hdfs dfsadmin -safemode get
+   If appropriate for your lab, leave safe mode:
+   hdfs dfsadmin -safemode leave
+
+3. File already exists:
+   Use a different destination filename or remove the old destination if safe.
+
+4. No such file or directory:
+   Verify the path using:
+   hdfs dfs -ls PATH
+
+5. Permission denied:
+   Check the HDFS user and permissions. Ask the lab administrator if required.
+
+6. Command not found:
+   Check Hadoop installation and PATH:
+   echo $HADOOP_HOME
+   echo $PATH
+
+============================================================
+PRACTICAL NOTES
+============================================================
+
+1. HDFS commands use the form:
+   hdfs dfs -COMMAND [OPTIONS] [PATH]
+
+2. Local filesystem paths and HDFS paths are different.
+   Example local path: /home/hadoop/input.txt
+   Example HDFS path: /user/hadoop/input.txt
+
+3. Use hdfs dfs -put or -copyFromLocal to upload local files to HDFS.
+
+4. Use hdfs dfs -get or -copyToLocal to download files from HDFS.
+
+5. Use hdfs dfs -cat to display file contents stored in HDFS.
+
+6. Use hdfs dfs -mv to move or rename files within HDFS.
+
+7. Use hdfs dfs -rm to delete files and hdfs dfs -rm -r to delete directories recursively.
+
+8. Be careful with delete commands. They remove HDFS data.
+
+9. The exact Hadoop installation steps depend on the Hadoop version and operating system configured in your college lab.
+
+END OF EXPERIMENT 1 - HADOOP HDFS PRACTICAL

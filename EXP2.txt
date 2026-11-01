@@ -1,0 +1,545 @@
+EXPERIMENT 2 - APACHE SQOOP AND MYSQL
+Topic: Use of Sqoop to transfer data between Hadoop and relational database servers.
+Aim: Ingest data using Sqoop.
+Database: college
+Table: Faculty
+
+IMPORTANT:
+- Run Linux and Sqoop commands in the Ubuntu terminal.
+- Run SQL statements after logging into the MySQL prompt.
+- Replace usernames, passwords, installation paths and HDFS paths if they differ in your lab.
+- This experiment uses Sqoop 1.4.7, Hadoop 3.4.1 and Java 11 as shown in the lab manual.
+- The lab manual's screenshots use a MySQL database named college and a Faculty table.
+
+============================================================
+PART 1 - CHECK JAVA AND HADOOP
+============================================================
+
+Check Java:
+
+java -version
+
+Check Hadoop:
+
+hadoop version
+
+============================================================
+PART 2 - CONFIGURE SQOOP ENVIRONMENT VARIABLES
+============================================================
+
+Open bash configuration:
+
+nano ~/.bashrc
+
+Add these lines. Change paths if your installation directories are different:
+
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+
+export HADOOP_HOME=/home/hadoop/hadoop-3.4.1
+export HADOOP_INSTALL=$HADOOP_HOME
+export HADOOP_MAPRED_HOME=$HADOOP_HOME
+export HADOOP_COMMON_HOME=$HADOOP_HOME
+export HADOOP_HDFS_HOME=$HADOOP_HOME
+export YARN_HOME=$HADOOP_HOME
+export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
+
+export SQOOP_HOME=/home/hadoop/sqoop-1.4.7.bin__hadoop-2.6.0
+
+export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$SQOOP_HOME/bin
+
+Save nano:
+Ctrl + O
+Enter
+Ctrl + X
+
+Apply changes:
+
+source ~/.bashrc
+
+Check environment variables:
+
+echo $JAVA_HOME
+echo $HADOOP_HOME
+echo $SQOOP_HOME
+
+Check Sqoop:
+
+sqoop version
+
+Expected version in the lab manual: Sqoop 1.4.7
+
+============================================================
+PART 3 - INSTALL AND START MYSQL
+============================================================
+
+Install MySQL:
+
+sudo apt update
+sudo apt install mysql-server
+
+Start MySQL:
+
+sudo systemctl start mysql
+
+Enable MySQL at startup:
+
+sudo systemctl enable mysql
+
+Check MySQL status:
+
+sudo systemctl status mysql
+
+Open MySQL as administrator:
+
+sudo mysql
+
+============================================================
+PART 4 - CREATE MYSQL USER AND DATABASE
+============================================================
+
+Run these SQL statements inside the MySQL prompt.
+
+Create user:
+
+CREATE USER 'hadoop'@'localhost'
+IDENTIFIED BY 'Hadoop@1234!';
+
+Grant permissions:
+
+GRANT ALL PRIVILEGES ON *.*
+TO 'hadoop'@'localhost'
+WITH GRANT OPTION;
+
+Apply privileges:
+
+FLUSH PRIVILEGES;
+
+Exit:
+
+EXIT;
+
+Login as hadoop:
+
+mysql -u hadoop -p
+
+Enter the password when prompted.
+
+Create database:
+
+CREATE DATABASE college;
+
+Select database:
+
+USE college;
+
+============================================================
+PART 5 - CREATE FACULTY TABLE AND INSERT RECORDS
+============================================================
+
+Run inside MySQL:
+
+CREATE TABLE Faculty (
+    id INT PRIMARY KEY,
+    name VARCHAR(50),
+    department VARCHAR(50),
+    salary INT
+);
+
+Insert sample records:
+
+INSERT INTO Faculty VALUES
+(1, 'Amit', 'Computer', 60000),
+(2, 'Neha', 'IT', 55000),
+(3, 'Rahul', 'EXTC', 50000),
+(4, 'Priya', 'Computer', 65000),
+(5, 'Rohit', 'Mechanical', 48000);
+
+Display records:
+
+SELECT * FROM Faculty;
+
+Exit MySQL:
+
+EXIT;
+
+============================================================
+PART 6 - START HADOOP SERVICES
+============================================================
+
+Start HDFS:
+
+start-dfs.sh
+
+Start YARN:
+
+start-yarn.sh
+
+Check Java processes:
+
+jps
+
+Expected Hadoop processes may include:
+
+NameNode
+DataNode
+SecondaryNameNode
+ResourceManager
+NodeManager
+Jps
+
+============================================================
+PART 7 - SQOOP IMPORT: MYSQL TO HDFS
+============================================================
+
+Aim:
+Import all records from the MySQL Faculty table into HDFS.
+
+Run in Ubuntu terminal:
+
+sqoop import \
+--connect jdbc:mysql://localhost:3306/college \
+--username hadoop \
+-P \
+--table Faculty
+
+Enter the MySQL password when prompted.
+
+Check imported files:
+
+hdfs dfs -ls /user/hadoop/Faculty
+
+Display imported data:
+
+hdfs dfs -cat /user/hadoop/Faculty/part-m-*
+
+NOTE:
+The exact output file name and column order can depend on the Sqoop job and table configuration.
+
+============================================================
+PART 8 - SPECIFY A TARGET DIRECTORY IN HDFS
+============================================================
+
+Aim:
+Save imported data in a specific HDFS directory.
+
+sqoop import \
+--connect jdbc:mysql://localhost:3306/college \
+--username hadoop \
+-P \
+--table Faculty \
+--target-dir /user/hadoop/faculty_target
+
+Verify directory:
+
+hdfs dfs -ls /user/hadoop/faculty_target
+
+Display data:
+
+hdfs dfs -cat /user/hadoop/faculty_target/part-m-*
+
+============================================================
+PART 9 - IMPORT ONLY A SUBSET OF DATA
+============================================================
+
+Aim:
+Import only Faculty records where salary is greater than 50000.
+
+sqoop import \
+--connect jdbc:mysql://localhost:3306/college \
+--username hadoop \
+-P \
+--table Faculty \
+--where "salary > 50000" \
+--target-dir /user/hadoop/faculty_subset
+
+Verify:
+
+hdfs dfs -ls /user/hadoop/faculty_subset
+
+Display data:
+
+hdfs dfs -cat /user/hadoop/faculty_subset/part-m-*
+
+Expected matching records from the sample data:
+
+1,Amit,Computer,60000
+2,Neha,IT,55000
+4,Priya,Computer,65000
+
+============================================================
+PART 10 - PROTECTING THE MYSQL PASSWORD
+============================================================
+
+METHOD 1 - USE -P TO ENTER PASSWORD INTERACTIVELY
+
+sqoop import \
+--connect jdbc:mysql://localhost:3306/college \
+--username hadoop \
+-P \
+--table Faculty
+
+Enter password when prompted.
+
+METHOD 2 - USE A PASSWORD FILE
+
+Create password file:
+
+echo -n "Hadoop@1234!" > ~/password.txt
+
+Set file permission:
+
+chmod 400 ~/password.txt
+
+Run Sqoop using password file:
+
+sqoop import \
+--connect jdbc:mysql://localhost:3306/college \
+--username hadoop \
+--password-file file:///home/hadoop/password.txt \
+--table Faculty \
+--target-dir /user/hadoop/faculty_password
+
+Verify:
+
+hdfs dfs -ls /user/hadoop/faculty_password
+
+SECURITY NOTE:
+The password shown here is the sample password used in this practical example. Use your own lab password. Do not share or commit password files.
+
+============================================================
+PART 11 - COMPRESSING IMPORTED DATA
+============================================================
+
+Aim:
+Import and compress the Faculty table data.
+
+sqoop import \
+--connect jdbc:mysql://localhost:3306/college \
+--username hadoop \
+-P \
+--table Faculty \
+--compress \
+--target-dir /user/hadoop/faculty_compress
+
+Verify:
+
+hdfs dfs -ls /user/hadoop/faculty_compress
+
+Read compressed data:
+
+hdfs dfs -text /user/hadoop/faculty_compress/part-m-*
+
+NOTE:
+The lab manual demonstrates compressed output with .gz files. The exact compression extension depends on the configured codec and Sqoop/Hadoop setup.
+
+============================================================
+PART 12 - EXPORT: HDFS TO MYSQL
+============================================================
+
+Aim:
+Export data from HDFS into a MySQL table.
+
+First, login to MySQL:
+
+mysql -u hadoop -p
+
+Select database:
+
+USE college;
+
+Create export table:
+
+CREATE TABLE Faculty_export (
+    department VARCHAR(50),
+    id INT,
+    name VARCHAR(50),
+    salary INT
+);
+
+Exit MySQL:
+
+EXIT;
+
+Run Sqoop export in Ubuntu terminal:
+
+sqoop export \
+--connect jdbc:mysql://localhost:3306/college \
+--username hadoop \
+-P \
+--table Faculty_export \
+--export-dir /user/hadoop/Faculty
+
+Enter password when prompted.
+
+IMPORTANT COLUMN ORDER:
+The Faculty_export table above uses this order:
+department, id, name, salary.
+
+The HDFS export file must contain fields in exactly this order for the command above.
+If the imported HDFS data is in id, name, department, salary order, create a matching MySQL table or prepare an HDFS export file with the required order before exporting. Do not export mismatched column order.
+
+Verify exported data:
+
+mysql -u hadoop -p
+
+USE college;
+
+SELECT * FROM Faculty_export;
+
+============================================================
+PART 13 - USEFUL MYSQL COMMANDS
+============================================================
+
+Login:
+
+mysql -u hadoop -p
+
+Show databases:
+
+SHOW DATABASES;
+
+Create database:
+
+CREATE DATABASE college;
+
+Select database:
+
+USE college;
+
+Show tables:
+
+SHOW TABLES;
+
+Describe table:
+
+DESCRIBE Faculty;
+
+Display all records:
+
+SELECT * FROM Faculty;
+
+Display records with salary greater than 50000:
+
+SELECT * FROM Faculty WHERE salary > 50000;
+
+Exit MySQL:
+
+EXIT;
+
+============================================================
+PART 14 - USEFUL HDFS COMMANDS
+============================================================
+
+List HDFS directory:
+
+hdfs dfs -ls /user/hadoop/
+
+List imported Faculty data:
+
+hdfs dfs -ls /user/hadoop/Faculty
+
+Display imported data:
+
+hdfs dfs -cat /user/hadoop/Faculty/part-m-*
+
+Display compressed data:
+
+hdfs dfs -text /user/hadoop/faculty_compress/part-m-*
+
+Create HDFS directory:
+
+hdfs dfs -mkdir -p /user/hadoop/faculty_target
+
+Remove an HDFS directory (CAUTION):
+
+hdfs dfs -rm -r /user/hadoop/faculty_target
+
+============================================================
+PART 15 - IMPORTANT SQOOP OPTIONS
+============================================================
+
+sqoop import       - Imports data from relational database to Hadoop.
+sqoop export       - Exports data from HDFS to relational database.
+--connect          - Specifies JDBC database connection URL.
+--username         - Specifies MySQL username.
+-P                 - Prompts for password.
+--password-file    - Reads password from a file.
+--table            - Specifies database table.
+--target-dir       - Specifies HDFS destination directory.
+--where            - Filters records using a condition.
+--compress         - Enables compression during import.
+--export-dir       - Specifies HDFS source directory for export.
+--columns          - Specifies selected columns.
+
+============================================================
+PART 16 - EXECUTION ORDER FOR PRACTICAL EXAM
+============================================================
+
+1. Check Java:
+   java -version
+
+2. Check Hadoop:
+   hadoop version
+
+3. Configure Sqoop environment variables in ~/.bashrc.
+
+4. Apply configuration:
+   source ~/.bashrc
+
+5. Check Sqoop:
+   sqoop version
+
+6. Install and start MySQL.
+
+7. Create MySQL user hadoop.
+
+8. Create database college.
+
+9. Create Faculty table.
+
+10. Insert five Faculty records.
+
+11. Verify records:
+    SELECT * FROM Faculty;
+
+12. Start Hadoop:
+    start-dfs.sh
+    start-yarn.sh
+
+13. Import Faculty table:
+    sqoop import ...
+
+14. Verify imported data:
+    hdfs dfs -ls
+    hdfs dfs -cat
+
+15. Practise target directory import.
+
+16. Practise subset import using --where.
+
+17. Practise password prompt using -P.
+
+18. Practise password-file method.
+
+19. Practise compression using --compress.
+
+20. Create Faculty_export table and perform Sqoop export.
+
+21. Verify exported records using:
+    SELECT * FROM Faculty_export;
+
+============================================================
+IMPORTANT PRACTICAL NOTES
+============================================================
+
+1. Run Linux, Hadoop and Sqoop commands in the Ubuntu terminal.
+2. Run SQL statements after logging into the MySQL prompt.
+3. Do not type SQL statements directly into the Ubuntu shell.
+4. If an HDFS target directory already exists, Sqoop import may fail. Use a new directory or remove the old directory if it is safe to do so.
+5. Sqoop export requires the HDFS input fields to match the MySQL destination table column order and data types.
+6. Make sure the MySQL JDBC connector JAR is available in the Sqoop library directory if Sqoop reports that the MySQL driver is missing.
+7. Optional integration warnings for HBase, HCatalog, Accumulo or ZooKeeper do not automatically mean the Sqoop job failed. Check the final job status and HDFS output.
+8. The sample password in this file is for demonstration. Use the password configured on your own system.
+9. The lab manual shows the basic Faculty table import, target directory, subset import, password methods, compression and export exercises.
+
+END OF EXPERIMENT 2 - SQOOP
